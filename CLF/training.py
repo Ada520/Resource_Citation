@@ -10,20 +10,21 @@ process:
 5.validation
 6.prediction
 '''
+import os
 import sys
-sys.path.insert(0,os.getcwd(0))
+
 import tensorflow as tf
 import numpy as np
-import os
+
 import random,gensim
 import os
 import pickle
-from data_utils import load_data,create_vocabulary
+from data_utlis import create_vocabulary#load_data
 from tflearn.data_utils import pad_sequences
 import os
+sys.path.insert(0,os.getcwd())
 import random,gensim
 import pickle
-
 # configuration
 FLAGS=tf.app.flags.FLAGS
 tf.app.flags.DEFINE_string("framework_type",'best_role_1st','type of learning object')
