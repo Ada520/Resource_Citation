@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="5b7a1742-49b4-4db7-b2b3-316ead584146" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/data/create_mini_testd_ata.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test.py" />
+    <list default="true" id="5b7a1742-49b4-4db7-b2b3-316ead584146" name="Default" comment="抽取小样本数据来跑通和理解代码">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CLF/data_utlis.py" afterPath="$PROJECT_DIR$/CLF/data_utlis.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CLF/training.py" afterPath="$PROJECT_DIR$/CLF/training.py" />
     </list>
     <ignored path="Resource_Citation.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -34,22 +30,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="create_mini_testd_ata.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/data/create_mini_testd_ata.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.3846154">
-              <caret line="8" column="26" selection-start-line="8" selection-start-column="26" selection-end-line="8" selection-end-column="26" />
-              <folding>
-                <element signature="e#1#11#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="data_utlis.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="data_utlis.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/CLF/data_utlis.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
+            <state vertical-scroll-proportion="2.5384614">
               <caret line="114" column="42" selection-start-line="114" selection-start-column="42" selection-end-line="114" selection-end-column="42" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
@@ -504,7 +488,13 @@
       <option name="project" value="LOCAL" />
       <updated>1562918550381</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="抽取小样本数据来跑通和理解代码">
+      <created>1562923577754</created>
+      <option name="number" value="00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1562923577754</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -538,7 +528,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="xiugai" />
     <MESSAGE value="加入训练数据" />
-    <option name="LAST_COMMIT_MESSAGE" value="加入训练数据" />
+    <MESSAGE value="抽取小样本数据来跑通和理解代码" />
+    <option name="LAST_COMMIT_MESSAGE" value="抽取小样本数据来跑通和理解代码" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -605,22 +596,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CLF/data_utlis.py">
+    <entry file="file://$PROJECT_DIR$/data/create_mini_testd_ata.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="114" column="42" selection-start-line="114" selection-start-column="42" selection-end-line="114" selection-end-column="42" />
+        <state vertical-scroll-proportion="0.15384616">
+          <caret line="8" column="26" selection-start-line="8" selection-start-column="26" selection-end-line="8" selection-end-column="26" />
           <folding>
-            <element signature="e#0#13#0" expanded="true" />
+            <element signature="e#1#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/create_mini_testd_ata.py">
+    <entry file="file://$PROJECT_DIR$/CLF/data_utlis.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3846154">
-          <caret line="8" column="26" selection-start-line="8" selection-start-column="26" selection-end-line="8" selection-end-column="26" />
+        <state vertical-scroll-proportion="2.5384614">
+          <caret line="114" column="42" selection-start-line="114" selection-start-column="42" selection-end-line="114" selection-end-column="42" />
           <folding>
-            <element signature="e#1#11#0" expanded="true" />
+            <element signature="e#0#13#0" expanded="true" />
           </folding>
         </state>
       </provider>
