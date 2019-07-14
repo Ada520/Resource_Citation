@@ -30,10 +30,10 @@ def word_capitalize(word):
             return 'ALPHA'
         else:
             return 'OTHER'
-'''
+
 def load_data(data_path,vocab_role_1st_label2index,
-              vocab_role_2nd_label2index,vocab_func_label_2index,
-              vocab_word2index,vocab_cahr2index,vocab_pos2index,
+              vocab_role_2nd_label2index,vocab_func_label2index,
+              vocab_word2index,vocab_char2index,vocab_pos2index,
               vocab_cap2index,sentence_len,word_len,flag_use_char,
               flag_use_pos,flag_use_cap):
     """
@@ -56,9 +56,87 @@ def load_data(data_path,vocab_role_1st_label2index,
                 - pos_sequence: sentence_len
                 - cap_sequence: sentence_len
     """
+    data_file = codecs.open(data_path, mode='r', encoding='utf-8')
+    data_lines = data_file.readlines()
+    random.shuffle(data_lines)
+    # build data samples:
+    link_Y = []
+    Word_sequences = []
+    Char_sequences = []
+    Pos_sequences = []
+    Cap_sequences = []
+    role_1st_labels = []
+    role_2nd_labels = []
+    func_labels = []
+    for i, line in enumerate(data_lines):
+        #raw_list = line.strip().split("\t")
+        #print("====="*15)
+        #print(raw_list)
+        #print(raw_list[0])
+        #print(raw_list[1])
+        link_index, raw_list = int(i), line
+        raw_list = raw_list.strip().split("__label__")
+        input_list = raw_list[0].strip().split(" ")
+        label_list = raw_list[1].split('|')
+        # get labels
+        link_Y.append(link_index)
+        role_1st_label = vocab_role_1st_label2index[label_list[0]]
+        # print("====="*15)
+        # print(label_list[0])
+        # print(role_1st_label)
+        # exit()
+        role_2nd_label = vocab_role_2nd_label2index[label_list[1]]
+        func_label = vocab_func_label2index[label_list[2]]
+        role_1st_labels.append(role_1st_label)
+        role_2nd_labels.append(role_2nd_label)
+        func_labels.append(func_label)
+        # get word lists
+        word_sequence = [vocab_word2index.get(x, UNK_ID) for x in input_list]
+        #print(word_sequence)
+        #exit()
+        Word_sequences.append(word_sequence)
+        # get char lists
+        if flag_use_char:
+            char_sequence = [] # [sentence_len, word_len]
+            for word in input_list:
+                char_indexs = [vocab_char2index.get(char, UNK_ID) for char in word]
+                char_sequence.append(char_indexs)
+            if len(input_list) < sentence_len:
+                char_sequence.extend( [[0]] * (sentence_len-len(input_list)))
+            else:
+                char_sequence = char_sequence[:sentence_len]
+            #print(input_list)
+            #print(char_sequence)
+            char_sequence = pad_sequences(char_sequence, maxlen=word_len, value=0.)
+            #print(char_sequence[0])
+            #print(char_sequence)
+            #exit()
+            Char_sequences.append(char_sequence)
+        if flag_use_pos:
+            pos_sequence = nltk.pos_tag(input_list) # [sentence_len]
+            word_seq, pos_seq = zip(*pos_sequence)
+            pos_sequence = list(pos_seq)
+            pos_sequence = [vocab_pos2index.get(pos, UNK_ID) for pos in pos_sequence]
+            Pos_sequences.append(pos_sequence)
+        if flag_use_cap:
+            cap_sequence = [word_capitalize(word) for word in input_list]
+            cap_sequence = [vocab_cap2index[cap] for cap in cap_sequence]
+            Cap_sequences.append(cap_sequence)
+
+    Word_sequences = pad_sequences(Word_sequences, maxlen=sentence_len, value=0.)
+    #print(Word_sequences)
+    #exit()
+    if flag_use_pos:
+        Pos_sequences = pad_sequences(Pos_sequences, maxlen=sentence_len, value=0.)
+    if flag_use_cap:
+        Cap_sequences = pad_sequences(Cap_sequences, maxlen=sentence_len, value=0.)
+    X = {'word':np.array(Word_sequences), 'char':np.array(Char_sequences), 'pos':np.array(Pos_sequences), 'cap':np.array(Cap_sequences),
+         'role_1st':role_1st_labels, 'role_2nd':role_2nd_labels, 'func':func_labels}
+    return (X, np.array(link_Y))
 
 
-'''
+
+
 #use pretrained word embeding to get word vocabulary and labels, and its relationship with index
 def create_vocabulary(training_data_path,word2vec_model,name_scope="att_lstm"):
     cache_vocabulary_label_pik='cache'+'_'+name_scope
@@ -67,9 +145,9 @@ def create_vocabulary(training_data_path,word2vec_model,name_scope="att_lstm"):
     cache_path=cache_vocabulary_label_pik+'/'+'vocab_label.pik'
     print("cache_path:",cache_path,"file_exists:",os.path.exists(cache_path))
     if os.path.exists(cache_path):
-        pass
-        #with open(cache_path,'rb') as data_f:
-        #    return pickle.load(data_f)
+        #pass
+        with open(cache_path,'rb') as data_f:
+            return pickle.load(data_f)
     else:
         #initialize vocabulary
         vocabulary_word2index={}

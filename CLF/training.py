@@ -19,12 +19,14 @@ import numpy as np
 import random,gensim
 import os
 import pickle
-from data_utlis import create_vocabulary#load_data
-from tflearn.data_utils import pad_sequences
 import os
 sys.path.insert(0,os.getcwd())
+from data_utlis import create_vocabulary,load_data
+from tflearn.data_utils import pad_sequences
+
 import random,gensim
 import pickle
+from model import Model
 # configuration
 FLAGS=tf.app.flags.FLAGS
 tf.app.flags.DEFINE_string("framework_type",'best_role_1st','type of learning object')
@@ -33,8 +35,8 @@ tf.app.flags.DEFINE_string("framework_type",'best_role_1st','type of learning ob
 tf.app.flags.DEFINE_string("role_1st_train_path",'../data/SciRes/role_1st_train2.txt','path of 1st role training data.')
 tf.app.flags.DEFINE_string("role_2nd_train_path",'../data/SciRes/role_2nd_train2.txt','path of 2nd role training data.')
 tf.app.flags.DEFINE_string('func_train_path','../data/SciRes/role_2nd_train2.txt','path of func training data.')
-tf.app.flags.DEFINE_string("dev_path",'../data/SciRes/dev.txt','path of developing data.')
-tf.app.flags.DEFINE_string("test_path",'../data/SciRes/test.txt','path of testing data.')
+tf.app.flags.DEFINE_string("dev_path",'../data/SciRes/dev2.txt','path of developing data.')
+tf.app.flags.DEFINE_string("test_path",'../data/SciRes/test2.txt','path of testing data.')
 
 #-------------path pf pretrained word embedding -----------------------
 tf.app.flags.DEFINE_string("word2vec_model_path",'sci.vector',"word2vect's vocabulary and vectors.")
@@ -52,7 +54,8 @@ tf.app.flags.DEFINE_float('func_weight',0.3,'weight of func classification task'
 tf.app.flags.DEFINE_integer('word_embed_size',200,"word embedding size")
 tf.app.flags.DEFINE_integer("char_embed_size",200,"char embedding size")
 tf.app.flags.DEFINE_integer("feature_embed_size",50,"feature embedding size")
-tf.app.flags.DEFINE_integer("sentence_len",20,"max word length")
+tf.app.flags.DEFINE_integer("sentence_len",200,"max sentence length")
+tf.app.flags.DEFINE_integer("word_len",20,"max word length")
 tf.app.flags.DEFINE_integer("learning_rate",1e-2,'learning rate')
 tf.app.flags.DEFINE_integer("batch_size",512,"Batch size for trainining/evaluating")
 tf.app.flags.DEFINE_integer("decay_steps", 1000, "how many steps before decay learning rate.")
@@ -76,6 +79,7 @@ def main(_):
         word2vec_model=None
 
     #1.get vocabulary of X and Label
+    print("====="*15)
     print("strart create vocabulary...")
     vocabulary_word2index,vocabulary_index2word,\
     vocabulary_role_1st_label2index,vocabulary_role_1st_index2label,\
@@ -113,6 +117,8 @@ def main(_):
         "best_func" : FLAGS.func_train_path
     }
 
+    print("========="*15)
+    print("Start load data from file...")
     train = load_data(train_path[FLAGS.framework_type],
                       vocabulary_role_1st_label2index, vocabulary_role_2nd_label2index, vocabulary_func_label2index,
                       vocabulary_word2index, vocabulary_char2index, vocabulary_pos2index, vocabulary_cap2index,
@@ -128,14 +134,48 @@ def main(_):
                      vocabulary_word2index, vocabulary_char2index, vocabulary_pos2index,vocabulary_cap2index,
                       FLAGS.sentence_len, FLAGS.word_len,
                       FLAGS.use_char_embedding, FLAGS.use_feature_pos, FLAGS.use_feature_cap)
-    trainX, train_role_1st_Y, train_role_2nd_Y, train_func_Y = train
-    devX, dev_role_1st_Y, dev_role_2nd_Y, dev_func_Y = dev
-    testX, test_role_1st_Y, test_role_2nd_Y, test_func_Y = test
+
+    trainX, train_role_1st_Y, train_role_2nd_Y, train_func_Y = train[0]['word'],train[0]['role_1st'],train[0]['role_2nd'],train[0]['func']
+    devX, dev_role_1st_Y, dev_role_2nd_Y, dev_func_Y = dev[0]['word'],dev[0]['role_1st'],dev[0]['role_2nd'],dev[0]['func']
+    testX, test_role_1st_Y, test_role_2nd_Y, test_func_Y = test[0]['word'],test[0]['role_1st'],test[0]['role_2nd'],test[0]['func']
     print("Framework type: ", FLAGS.framework_type)
     print("Training set: ", len(train_role_1st_Y))
     print("Developing set: ", len(dev_role_1st_Y))
     print("Testing set: ", len(test_role_1st_Y))
     print("End load data from file!")
+
+    #2.create session.
+    print("====="*15)
+    print("start create session... ")
+    config=tf.ConfigProto()
+    config.gpu_options.allow_growth=True
+    with tf.Session(config=config) as sess:
+        #Instantiate Model
+        print("Start initialize multi-task model...")
+        print("Task weights: role_1st：%.2f, role_2nd：%.2f, func：%.2f" % (FLAGS.role_1st_weight, FLAGS.role_2nd_weight, FLAGS.func_weight))
+        model = Model(role_1st_num_classes, role_2nd_num_classes, func_num_classes,
+                      FLAGS.role_1st_weight, FLAGS.role_2nd_weight, FLAGS.func_weight,
+                      FLAGS.learning_rate, FLAGS.batch_size, FLAGS.decay_steps, FLAGS.decay_rate,
+                      FLAGS.sentence_len, word_vocab_size, FLAGS.word_embed_size,
+                      flag_use_char_embedding=True, char_vocab_size=char_vocab_size,
+                      char_embed_size=FLAGS.char_embed_size, word_len=FLAGS.word_len,
+                      flag_use_pos_feature=True, pos_vocab_size=pos_vocab_size, pos_embed_size=FLAGS.feature_embed_size,
+                      flag_use_cap_feature=True, cap_vocab_size=cap_vocab_size, cap_embed_size=FLAGS.feature_embed_size,
+                      is_training=FLAGS.is_training
+                      )
+        print("End initialize multi-task model!")
+        exit()
+        #Initialize Save
+        saver=tf.train.Saver()
+        if os.path.exists(FLAGS.ckpt_dir+"checkpoint"):
+            print("Restoring Variables from Checkpoint for rnn model.")
+            saver.restore(sess,tf.train.latest_checkpoint(FLAGS.ckpt_dir))
+        else:
+            print('Initializing Variables')
+            sess.run(tf.global_variables_initializer())
+            if FLAGS.use_pre_word_embedding: #load pre-trained word embedding
+                assign_pretrained_word_embedding(sess, vocabulary_index2word, word_vocab_size, model, word2vec_model)
+        curr_epoch=sess.run(model.epoch_step)
 
 if __name__ == '__main__':
     tf.app.run()
