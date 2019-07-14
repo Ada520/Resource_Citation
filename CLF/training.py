@@ -30,9 +30,9 @@ FLAGS=tf.app.flags.FLAGS
 tf.app.flags.DEFINE_string("framework_type",'best_role_1st','type of learning object')
 #可选项为best_1st_role/best_2nd_role/best_func
 #-----------------path of datasets--------
-tf.app.flags.DEFINE_string("role_1st_train_path",'../data/SciRes/role_1st_train.txt','path of 1st role training data.')
-tf.app.flags.DEFINE_string("role_2nd_train_path",'../data/SciRes/role_2nd_train.txt','path of 2nd role training data.')
-tf.app.flags.DEFINE_string('func_train_path','../data/SciRes/role_2nd_train.txt','path of func training data.')
+tf.app.flags.DEFINE_string("role_1st_train_path",'../data/SciRes/role_1st_train2.txt','path of 1st role training data.')
+tf.app.flags.DEFINE_string("role_2nd_train_path",'../data/SciRes/role_2nd_train2.txt','path of 2nd role training data.')
+tf.app.flags.DEFINE_string('func_train_path','../data/SciRes/role_2nd_train2.txt','path of func training data.')
 tf.app.flags.DEFINE_string("dev_path",'../data/SciRes/dev.txt','path of developing data.')
 tf.app.flags.DEFINE_string("test_path",'../data/SciRes/test.txt','path of testing data.')
 
@@ -68,7 +68,7 @@ tf.app.flags.DEFINE_boolean("use_feature_cap", True, "Whether to use CAP feature
 def main(_):
     #0.load pre-training word embeddings
     # move into 1. create_vocabulary
-    if FLAGS.use_pre_word_embdding:
+    if FLAGS.use_pre_word_embedding:
         print("using pre-trained word embedding.started.word2vec_model_path:",FLAGS.word2vec_model_path)
         word2vec_model=gensim.models.KeyedVectors.load_word2vec_format(FLAGS.word2vec_model_path)
     else:
@@ -89,7 +89,56 @@ def main(_):
     print("Role 2nd labels: ", vocabulary_role_2nd_index2label)
     print("Func labels: ", vocabulary_func_index2label)
 
+    word_vocab_size = len(vocabulary_word2index)
+    char_vocab_size = len(vocabulary_char2index)
+    pos_vocab_size = len(vocabulary_pos2index)
+    cap_vocab_size = len(vocabulary_cap2index)
+    role_1st_label_size = len(vocabulary_role_1st_label2index)
+    role_2nd_label_size = len(vocabulary_role_2nd_label2index)
+    func_label_size = len(vocabulary_func_label2index)
+    print("word_vocab_size: ",word_vocab_size)
+    print("char_vocab_size: ",char_vocab_size)
+    print("pos_vocab_size: ",pos_vocab_size)
+    print("cap_vocab_size: ",cap_vocab_size)
+    print("role 1st label size: " ,role_1st_label_size)
+    print("role 2nd label size: " ,role_2nd_label_size)
+    print("func label size: " ,func_label_size)
+    role_1st_num_classes = role_1st_label_size
+    role_2nd_num_classes = role_2nd_label_size
+    func_num_classes = func_label_size
 
+    train_path ={
+        "best_role_1st" : FLAGS.role_1st_train_path,
+        "best_role_2nd" : FLAGS.role_2nd_train_path,
+        "best_func" : FLAGS.func_train_path
+    }
+
+    train = load_data(train_path[FLAGS.framework_type],
+                      vocabulary_role_1st_label2index, vocabulary_role_2nd_label2index, vocabulary_func_label2index,
+                      vocabulary_word2index, vocabulary_char2index, vocabulary_pos2index, vocabulary_cap2index,
+                      FLAGS.sentence_len, FLAGS.word_len,
+                      FLAGS.use_char_embedding, FLAGS.use_feature_pos, FLAGS.use_feature_cap)
+    dev = load_data(FLAGS.dev_path,
+                    vocabulary_role_1st_label2index, vocabulary_role_2nd_label2index, vocabulary_func_label2index,
+                    vocabulary_word2index, vocabulary_char2index, vocabulary_pos2index, vocabulary_cap2index,
+                      FLAGS.sentence_len, FLAGS.word_len,
+                      FLAGS.use_char_embedding, FLAGS.use_feature_pos, FLAGS.use_feature_cap)
+    test = load_data(FLAGS.test_path,
+                      vocabulary_role_1st_label2index, vocabulary_role_2nd_label2index, vocabulary_func_label2index,
+                     vocabulary_word2index, vocabulary_char2index, vocabulary_pos2index,vocabulary_cap2index,
+                      FLAGS.sentence_len, FLAGS.word_len,
+                      FLAGS.use_char_embedding, FLAGS.use_feature_pos, FLAGS.use_feature_cap)
+    trainX, train_role_1st_Y, train_role_2nd_Y, train_func_Y = train
+    devX, dev_role_1st_Y, dev_role_2nd_Y, dev_func_Y = dev
+    testX, test_role_1st_Y, test_role_2nd_Y, test_func_Y = test
+    print("Framework type: ", FLAGS.framework_type)
+    print("Training set: ", len(train_role_1st_Y))
+    print("Developing set: ", len(dev_role_1st_Y))
+    print("Testing set: ", len(test_role_1st_Y))
+    print("End load data from file!")
+
+if __name__ == '__main__':
+    tf.app.run()
 
 
 

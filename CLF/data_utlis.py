@@ -30,7 +30,7 @@ def word_capitalize(word):
             return 'ALPHA'
         else:
             return 'OTHER'
-
+'''
 def load_data(data_path,vocab_role_1st_label2index,
               vocab_role_2nd_label2index,vocab_func_label_2index,
               vocab_word2index,vocab_cahr2index,vocab_pos2index,
@@ -58,7 +58,7 @@ def load_data(data_path,vocab_role_1st_label2index,
     """
 
 
-
+'''
 #use pretrained word embeding to get word vocabulary and labels, and its relationship with index
 def create_vocabulary(training_data_path,word2vec_model,name_scope="att_lstm"):
     cache_vocabulary_label_pik='cache'+'_'+name_scope
@@ -67,8 +67,9 @@ def create_vocabulary(training_data_path,word2vec_model,name_scope="att_lstm"):
     cache_path=cache_vocabulary_label_pik+'/'+'vocab_label.pik'
     print("cache_path:",cache_path,"file_exists:",os.path.exists(cache_path))
     if os.path.exists(cache_path):
-        with open(cache_path,'rb') as data_f:
-            return pickle.load(data_f)
+        pass
+        #with open(cache_path,'rb') as data_f:
+        #    return pickle.load(data_f)
     else:
         #initialize vocabulary
         vocabulary_word2index={}
@@ -124,12 +125,13 @@ def create_vocabulary(training_data_path,word2vec_model,name_scope="att_lstm"):
             input_list=raw_list[0].strip().split(" ")
             label_list=raw_list[1].strip().split("|")
             c_words.update(input_list)
+            #print('c_words',c_words)
             c_role_1st_labels.update([label_list[0]])
             c_role_2nd_labels.update([label_list[1]])
             c_func_labels.update([label_list[2]])
             pos_list=nltk.pos_tag(input_list)
             word_seg,pos_seg=zip(*pos_list)
-            pos_list=list(pos_list)
+            pos_list=list(pos_seg)
             c_pos.update(pos_list)
             cap_list=[word_capitalize(word) for word in input_list]
             c_cap.update(cap_list)
@@ -143,25 +145,20 @@ def create_vocabulary(training_data_path,word2vec_model,name_scope="att_lstm"):
                 word_vocab_list.append(word)
         else:
             word_vocab_list=c_words.most_common()
+        #print("======================")
+        #print (word_vocab_list)
         role_1st_label_list=c_role_1st_labels.most_common()
+        #print("========="*15)
+        #print(role_1st_label_list)
         role_2nd_label_list=c_role_2nd_labels.most_common()
         func_label_list=c_func_labels.most_common()
         char_vocab_list = c_chars.most_common()
         pos_vocab_list = c_pos.most_common()
         cap_vocab_list = c_cap.most_common()
+        #print("========="*15)
+        #print(cap_vocab_list)
+        #exit()
         #return most frequency
-        if word2vec_model != None:
-            word_vocab_list = []
-            for word in word2vec_model.vocab:
-                word_vocab_list.append(word)
-        else:
-            word_vocab_list = c_words.most_common()
-        role_1st_label_list = c_role_1st_labels.most_common()
-        role_2nd_label_list = c_role_2nd_labels.most_common()
-        func_label_list = c_func_labels.most_common()
-        char_vocab_list = c_chars.most_common()
-        pos_vocab_list = c_pos.most_common()
-        cap_vocab_list = c_cap.most_common()
 
         #put those words to dict
         for i,tuplee in enumerate(word_vocab_list):
@@ -186,6 +183,8 @@ def create_vocabulary(training_data_path,word2vec_model,name_scope="att_lstm"):
             cap, _ = tuplee
             vocabulary_cap2index[cap] = i+1
             vocabulary_index2cap[i+1] = cap
+        #print (vocabulary_cap2index)
+        #exit()
 
         for i,tuplee in enumerate(role_1st_label_list):
             label, _ =tuplee
