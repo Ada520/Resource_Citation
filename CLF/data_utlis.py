@@ -15,6 +15,22 @@ _PAD="PAD"
 _UNK="UNK"
 _CITE="_CITE_"
 
+
+def word_capitalize(word):
+    if word.isupper():
+        return 'UPPER'
+    if word.islower():
+        return 'LOWER'
+    if word.istitle():
+        return 'TITLE'
+    else:
+        if word.isdigit():
+            return 'NUM'
+        if word.isalpha():
+            return 'ALPHA'
+        else:
+            return 'OTHER'
+
 def load_data(data_path,vocab_role_1st_label2index,
               vocab_role_2nd_label2index,vocab_func_label_2index,
               vocab_word2index,vocab_cahr2index,vocab_pos2index,
@@ -113,6 +129,101 @@ def create_vocabulary(training_data_path,word2vec_model,name_scope="att_lstm"):
             c_func_labels.update([label_list[2]])
             pos_list=nltk.pos_tag(input_list)
             word_seg,pos_seg=zip(*pos_list)
+            pos_list=list(pos_list)
+            c_pos.update(pos_list)
+            cap_list=[word_capitalize(word) for word in input_list]
+            c_cap.update(cap_list)
+            for word in input_list:
+                c_chars.update(word)
+
+        #return most frequency
+        if word2vec_model!=None:
+            word_vocab_list=[]
+            for word in word2vec_model.vocab:
+                word_vocab_list.append(word)
+        else:
+            word_vocab_list=c_words.most_common()
+        role_1st_label_list=c_role_1st_labels.most_common()
+        role_2nd_label_list=c_role_2nd_labels.most_common()
+        func_label_list=c_func_labels.most_common()
+        char_vocab_list = c_chars.most_common()
+        pos_vocab_list = c_pos.most_common()
+        cap_vocab_list = c_cap.most_common()
+        #return most frequency
+        if word2vec_model != None:
+            word_vocab_list = []
+            for word in word2vec_model.vocab:
+                word_vocab_list.append(word)
+        else:
+            word_vocab_list = c_words.most_common()
+        role_1st_label_list = c_role_1st_labels.most_common()
+        role_2nd_label_list = c_role_2nd_labels.most_common()
+        func_label_list = c_func_labels.most_common()
+        char_vocab_list = c_chars.most_common()
+        pos_vocab_list = c_pos.most_common()
+        cap_vocab_list = c_cap.most_common()
+
+        #put those words to dict
+        for i,tuplee in enumerate(word_vocab_list):
+            if word2vec_model != None:
+                word = tuplee
+            else:
+                word, _ = tuplee
+            vocabulary_word2index[word] = i+3
+            vocabulary_index2word[i+3] = word
+
+        for i,tuplee in enumerate(char_vocab_list):
+            char, _ = tuplee
+            vocabulary_char2index[char] = i+2
+            vocabulary_index2char[i+2] = char
+
+        for i,tuplee in enumerate(pos_vocab_list):
+            pos, _ = tuplee
+            vocabulary_pos2index[pos] = i+2
+            vocabulary_index2pos[i+2] = pos
+
+        for i,tuplee in enumerate(cap_vocab_list):
+            cap, _ = tuplee
+            vocabulary_cap2index[cap] = i+1
+            vocabulary_index2cap[i+1] = cap
+
+        for i,tuplee in enumerate(role_1st_label_list):
+            label, _ =tuplee
+            label = str(label)
+            vocabulary_role_1st_label2index[label] = i
+            vocabulary_role_1st_index2label[i] = label
+
+        for i,tuplee in enumerate(role_2nd_label_list):
+            label, _ =tuplee
+            label = str(label)
+            vocabulary_role_2nd_label2index[label] = i
+            vocabulary_role_2nd_index2label[i] = label
+
+        for i,tuplee in enumerate(func_label_list):
+            label, _ =tuplee
+            label = str(label)
+            vocabulary_func_label2index[label] = i
+            vocabulary_func_index2label[i] = label
+
+        #save to file system if vocabulary of words not exists.
+        if not os.path.exists(cache_path):
+            with open(cache_path, 'ab') as data_f:
+                pickle.dump((vocabulary_word2index,vocabulary_index2word,
+                             vocabulary_role_1st_label2index,vocabulary_role_1st_index2label,
+                             vocabulary_role_2nd_label2index, vocabulary_role_2nd_index2label,
+                             vocabulary_func_label2index, vocabulary_func_index2label,
+                             vocabulary_char2index, vocabulary_index2char,
+                             vocabulary_pos2index, vocabulary_index2pos,
+                             vocabulary_cap2index, vocabulary_index2cap), data_f)
+
+    return vocabulary_word2index,vocabulary_index2word, \
+           vocabulary_role_1st_label2index, vocabulary_role_1st_index2label,\
+           vocabulary_role_2nd_label2index, vocabulary_role_2nd_index2label,\
+           vocabulary_func_label2index, vocabulary_func_index2label,\
+           vocabulary_char2index, vocabulary_index2char, \
+           vocabulary_pos2index, vocabulary_index2pos,\
+           vocabulary_cap2index, vocabulary_index2cap
+
 
 
 
