@@ -302,7 +302,67 @@ def create_vocabulary(training_data_path,word2vec_model,name_scope="att_lstm"):
            vocabulary_cap2index, vocabulary_index2cap
 
 
-
+def load_pred_data(data_path,
+              vocab_word2index, vocab_char2index, vocab_pos2index, vocab_cap2index,
+              sentence_len, word_len,
+              flag_use_char, flag_use_pos, flag_use_cap):
+    """
+    :param data_path:
+    :param vocab_label2index:
+    :param vocab_word2index:
+    :param vocab_char2index:
+    :param vocab_pos2index:
+    :param vocab_cap2index:
+    :param sentence_len: max length of word sequence
+    :param word_len:  max length of char sequence
+    :return: X: [ word_sequence, char_sequence, pos_sequence, cap_sequence]
+                - word_sequence: sentence_len
+                - char_sequence: sentence_len * word_len
+                - pos_sequence: sentence_len
+                - cap_sequence: sentence_len
+    """
+    data_file = codecs.open(data_path, mode='r', encoding='utf-8')
+    data_lines = data_file.readlines()
+    # build data samples:
+    Word_sequences = []
+    Char_sequences = []
+    Pos_sequences = []
+    Cap_sequences = []
+    for i, line in enumerate(data_lines):
+        raw_list = line.strip().split("\t")
+        input_list = raw_list[1].split(" ")
+        # get word lists
+        word_sequence = [vocab_word2index.get(x, UNK_ID) for x in input_list]
+        Word_sequences.append(word_sequence)
+        # get char lists
+        if flag_use_char:
+            char_sequence = [] # [sentence_len, word_len]
+            for word in input_list:
+                char_indexs = [vocab_char2index.get(char, UNK_ID) for char in word]
+                char_sequence.append(char_indexs)
+            if len(input_list) < sentence_len:
+                char_sequence.extend( [[0]] * (sentence_len-len(input_list)))
+            else:
+                char_sequence = char_sequence[:sentence_len]
+            char_sequence = pad_sequences(char_sequence, maxlen=word_len, value=0.)
+            Char_sequences.append(char_sequence)
+        if flag_use_pos:
+            pos_sequence = nltk.pos_tag(input_list) # [sentence_len]
+            word_seq, pos_seq = zip(*pos_sequence)
+            pos_sequence = list(pos_seq)
+            pos_sequence = [vocab_pos2index.get(pos, UNK_ID) for pos in pos_sequence]
+            Pos_sequences.append(pos_sequence)
+        if flag_use_cap:
+            cap_sequence = [word_capitalize(word) for word in input_list]
+            cap_sequence = [vocab_cap2index[cap] for cap in cap_sequence]
+            Cap_sequences.append(cap_sequence)
+    Word_sequences = pad_sequences(Word_sequences, maxlen=sentence_len, value=0.)
+    if flag_use_pos:
+        Pos_sequences = pad_sequences(Pos_sequences, maxlen=sentence_len, value=0.)
+    if flag_use_cap:
+        Cap_sequences = pad_sequences(Cap_sequences, maxlen=sentence_len, value=0.)
+    X = {'word':np.array(Word_sequences), 'char':np.array(Char_sequences), 'pos':np.array(Pos_sequences), 'cap':np.array(Cap_sequences)}
+    return X, data_lines
 
 
 
